@@ -1,0 +1,23 @@
+{
+    "status": 200,
+    "users": [
+        {
+            "twitter_id": "90718004",
+            "twitter_screen_name": "damiancaruso",
+            "score": {
+                "kscore": 10.86,
+                "slope": -0.32,
+                "description": "",
+                "kclass_id": 1,
+                "kclass": "Observer",
+                "kclass_description": "You don't share very much, but you follow the social web more than you let on. You may just enjoy observing more than sharing or you're checking this stuff out before jumping in full-force.",
+                "kscore_description": "",
+                "network_score": 11.25,
+                "amplification_score": 2,
+                "true_reach": 3,
+                "delta_1day": -0.07,
+                "delta_5day": -0.34
+            }
+        }
+    ]
+}

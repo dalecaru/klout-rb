@@ -1,0 +1,22 @@
+{
+    "status": 200,
+    "users": [
+        {
+            "twitter_screen_name": "damiancaruso",
+            "influencees": [
+                {
+                    "twitter_screen_name": "manolo22",
+                    "kscore": 12.03
+                },
+                {
+                    "twitter_screen_name": "gorrete",
+                    "kscore": 19.12
+                },
+                {
+                    "twitter_screen_name": "jackiechan",
+                    "kscore": 20.7
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,9 @@
+{
+    "status": 200,
+    "users": [
+        {
+            "twitter_screen_name": "damiancaruso",
+            "kscore": 10.86
+        }
+    ]
+}

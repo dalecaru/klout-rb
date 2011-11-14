@@ -1,0 +1,18 @@
+{
+    "status": 200,
+    "users": [
+        {
+            "twitter_screen_name": "damiancaruso",
+            "influencers": [
+                {
+                    "twitter_screen_name": "foursquare",
+                    "kscore": 95.71
+                },
+                {
+                    "twitter_screen_name": "rubyconfar",
+                    "kscore": 49.93
+                }
+            ]
+        }
+    ]
+}
