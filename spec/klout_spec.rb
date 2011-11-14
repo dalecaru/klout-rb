@@ -5,14 +5,49 @@ describe Klout::Client do
     @query = {:key => ""}
   end
 
-  describe "raise error" do
-    before do
-      stub_get("/1/klout.json").with(:query => @query.merge({:users => "damiancaruso"})).
-        to_return(:body => fixture("no_users.json"), :headers => {:content_type => "application/json; charset=utf-8"})
+  describe "errors" do
+    context "no users found" do
+      before do
+        stub_get("/1/klout.json").with(:query => @query.merge({:users => "damiancaruso"})).
+          to_return(:body => fixture("no_users.json"), :headers => {:content_type => "application/json; charset=utf-8"})
+      end
+
+      it "should raise an error if users are not found" do
+        expect { Klout::Client.score("damiancaruso") }.to raise_error(Klout::Error, "No users")
+      end
     end
 
-    it "should raise an error if users are not found" do
-      expect { Klout::Client.score("damiancaruso") }.to raise_error(Klout::Error, "No users")
+    context "invalid key" do
+      before do
+        stub_get("/1/klout.json").with(:query => @query.merge({:users => "damiancaruso"})).
+          to_return(:status => 403, :body => "<h1> 403 Developer Inactive </h1>", :headers => {:content_type => "application/xml; charset=utf-8"})
+      end
+
+      it "should raise an error if the key is invalid" do
+        expect { Klout::Client.score("damiancaruso") }.to raise_error(Klout::Error::Forbidden)
+      end
+    end
+
+    context "internal server error" do
+      before do
+        stub_get("/1/klout.json").with(:query => @query.merge({:users => "damiancaruso"})).
+          to_return(:status => 500)
+      end
+
+      it "should raise an error if there is a server error in klout" do
+        expect { Klout::Client.score("damiancaruso") }.to raise_error(Klout::Error::InternalServerError)
+      end
+    end
+
+    context "service unavailable" do
+      before do
+        stub_get("/1/klout.json").with(:query => @query.merge({:users => "damiancaruso"})).
+          to_return(:status => 503)
+      end
+
+      it "should raise an error if the service is unavailable" do
+        expect { Klout::Client.score("damiancaruso") }.to raise_error(Klout::Error::ServiceUnavailable)
+      end
     end
   end
 

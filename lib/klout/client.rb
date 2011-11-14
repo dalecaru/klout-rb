@@ -7,6 +7,9 @@ require 'singleton'
 
 module Klout
   class Error < StandardError; end
+  class Error::Forbidden < Klout::Error; end
+  class Error::InternalServerError < Klout::Error; end
+  class Error::ServiceUnavailable < Klout::Error; end
 
   class Client
     include Singleton
@@ -97,6 +100,14 @@ module Klout
       end
 
       def parse_response(response)
+        case response.code.to_i
+        when 403
+          raise Klout::Error::Forbidden.new
+        when 500
+          raise Klout::Error::InternalServerError.new
+        when 503
+          raise Klout::Error::ServiceUnavailable.new
+        end
         body = ::MultiJson.decode(response.body)
         raise Klout::Error.new(body['body']['error']) if body.has_key?('body') && body['body'].has_key?('error')
         Hashie::Mash.new(body)
