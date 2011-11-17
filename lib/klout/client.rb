@@ -15,107 +15,118 @@ module Klout
     include Singleton
     extend SingleForwardable
   
-    attr_accessor :api_key, :proxy
+    # Public: Gets/Sets the Klout API key.
+    attr_accessor :api_key
 
+    # Public: Gets/Sets an optional Proxy host to use.
+    attr_accessor :proxy
+
+    # Internal: Delegates api methods to the Klout::Client instance.
     def_delegators :instance, :score, :profile, :topics, :influenced_by, :influencer_of
 
-    # Configure Klout Client options
-    # 
-    # == Example
+    # Public: Configure Klout Client options.
     #
-    #  Klout::Client.configure do |config|
-    #    config.api_key = <YOUR_API_KEY_HERE>
-    #    config.proxy   = "http://example.com"
-    #  end
+    # Yields the Klout::Client instance.
     #
+    # Returns nothing.
     def self.configure
       yield instance if block_given?
     end
 
-    # Klout REST API endpoint
+    # Public: Klout REST API endpoint
+    #
+    # Returns the Klout REST API endpoint
     def self.endpoint
       'http://api.klout.com'
     end
 
-    # Retrieve Klout score for the given username.
+    # Public: Retrieve Klout score for the given usernames.
+    # 
+    # usernames - The username or Array of usernames to look for.
     #
-    # @see http://developer.klout.com/docs/read/api/API
-    # @param usernames [Array<String>] Twitter usernames.
-    # @return [Array<Hashie::Mash>] User Score Pair
-    # @example Return the Klout score for damiancaruso
-    # Klout::Client.score("damiancaruso")
+    # Returns an Array of user klout score objects.
     def score(usernames)
       get("/1/klout.json", :users => [usernames].flatten).users
     end
 
-    # Retrieve User profile for the given username.
+    # Public: Retrieve users Klout profile for the given usernames.
+    # 
+    # usernames - The username or Array of usernames to look for.
     #
-    # @see http://developer.klout.com/docs/read/api/User_Methods
-    # @param usernames [Array<String>] Twitter usernames.
-    # @return [Array<Hashie::Mash>] User Object
-    # @example Return the profile for damiancaruso
-    # Klout::Client.profile("damiancaruso")
+    # Returns an Array of user klout profile objects.
     def profile(usernames)
       get("/1/users/show.json", :users => [usernames].flatten).users
     end
 
-    # Retrieve User topics for the given username.
+    # Public: Retrieve users topics for the given usernames.
+    # 
+    # usernames - The username or Array of usernames to look for.
     #
-    # @see http://developer.klout.com/docs/read/api/User_Methods
-    # @param usernames [Array<String>] Twitter usernames.
-    # @return [Array<Hashie::Mash>] Topic Objects
-    # @example Return topics for damiancaruso
-    # Klout::Client.topics("damiancaruso")
+    # Returns an Array of user klout topics objects.
     def topics(usernames)
       get("/1/users/topics.json", :users => [usernames].flatten).users
     end
 
-    # Retrieve User topics for the given username.
+    # Public: Retrieve users influencers for the given usernames.
+    # 
+    # usernames - The username or Array of usernames to look for.
     #
-    # @see http://developer.klout.com/docs/read/api/SOI_Methods
-    # @param usernames [Array<String>] Twitter usernames.
-    # @return [Array<Hashie::Mash>] User Score Pair
-    # @example Return users influenced by damiancaruso
-    # Klout::Client.influenced_by("damiancaruso")
+    # Returns an Array of klout users with their corresponding influencers.
     def influenced_by(usernames)
       get("/1/soi/influenced_by.json", :users => [usernames].flatten).users
     end
 
-    # Retrieve User topics for the given username.
+    # Public: Retrieve users influencees for the given usernames.
+    # 
+    # usernames - The username or Array of usernames to look for.
     #
-    # @see http://developer.klout.com/docs/read/api/SOI_Methods
-    # @param usernames [Array<String>] Twitter usernames.
-    # @return [Array<Hashie::Mash>] User Score Pair
-    # @example Return users influencers of damiancaruso
-    # Klout::Client.influencer_of("damiancaruso")
+    # Returns an Array of klout users with their corresponding influencees.
     def influencer_of(usernames)
       get("/1/soi/influencer_of.json", :users => [usernames].flatten).users
     end
 
     private
-      def get(path, params = {})
-        request = HTTPI::Request.new(build_url(path, params))
-        request.proxy = proxy unless proxy.nil?
-        parse_response(HTTPI.get(request))
-      end
+    # Internal: Executes a GET HTTP request.
+    # 
+    # path   - The path to make the request again.
+    # params - A Hash with the optionals http params.
+    #
+    # Returns a response object.
+    def get(path, params = {})
+      request = HTTPI::Request.new(build_url(path, params))
+      request.proxy = proxy unless proxy.nil?
+      parse_response(HTTPI.get(request))
+    end
 
-      def parse_response(response)
-        case response.code.to_i
-        when 403
-          raise Klout::Error::Forbidden.new
-        when 500
-          raise Klout::Error::InternalServerError.new
-        when 503
-          raise Klout::Error::ServiceUnavailable.new
-        end
-        body = ::MultiJson.decode(response.body)
-        raise Klout::Error.new(body['body']['error']) if body.has_key?('body') && body['body'].has_key?('error')
-        Hashie::Mash.new(body)
+    # Internal: Parses the HTTP response.
+    #
+    # Returns a Mash of the JSON parsed hash.
+    # Raises Klout::Error::Forbidden if Klout api key is not valid.
+    # Raises Klout::Error::InternalServerError if there is a server error in Klout.
+    # Raises Klout::Error::ServiceUnavailable if Klout endpoint is unavailable.
+    def parse_response(response)
+      case response.code.to_i
+      when 403
+        raise Klout::Error::Forbidden.new
+      when 500
+        raise Klout::Error::InternalServerError.new
+      when 503
+        raise Klout::Error::ServiceUnavailable.new
       end
+      body = ::MultiJson.decode(response.body)
+      raise Klout::Error.new(body['body']['error']) if body.has_key?('body') && body['body'].has_key?('error')
+      Hashie::Mash.new(body)
+    end
 
-      def build_url(path, params = {})
-        "#{self.class.endpoint}#{path}?#{Rack::Utils.build_query(params.merge(:key => api_key.to_s))}"
-      end
+    # Internal: Builds the request url.
+    #
+    # path   - The path to make the request again.
+    # params - A Hash with the optionals http params.
+    #
+    # Returns a string url.
+    def build_url(path, params = {})
+      "#{self.class.endpoint}#{path}?#{Rack::Utils.build_query(params.merge(:key => api_key.to_s))}"
+    end
   end
 
   HTTPI.log = false
