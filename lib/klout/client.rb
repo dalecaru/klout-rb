@@ -2,7 +2,7 @@ require 'forwardable'
 require 'hashie/mash'
 require 'httpi'
 require 'multi_json'
-require 'uri'
+require 'rack/utils'
 require 'singleton'
 
 module Klout
@@ -114,9 +114,9 @@ module Klout
       end
 
       def build_url(path, params = {})
-        uri = URI.join(self.class.endpoint, path)
-        uri.query = URI.encode_www_form(params.merge(:key => api_key.to_s))
-        uri.to_s
+        "#{self.class.endpoint}#{path}?#{Rack::Utils.build_query(params.merge(:key => api_key.to_s))}"
       end
   end
+
+  HTTPI.log = false
 end
