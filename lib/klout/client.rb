@@ -11,6 +11,8 @@ module Klout
   class Error::InternalServerError < Klout::Error; end
   class Error::ServiceUnavailable < Klout::Error; end
 
+  # Public: Class with the necessary methods for performing all Klout API operations.
+  # All API methods are instance methods but can be called on the Client class.
   class Client
     include Singleton
     extend SingleForwardable
