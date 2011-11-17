@@ -8,6 +8,7 @@ require 'singleton'
 module Klout
   class Error < StandardError; end
   class Error::Forbidden < Klout::Error; end
+  class Error::GatewayTimeout < Klout::Error; end
   class Error::InternalServerError < Klout::Error; end
   class Error::ServiceUnavailable < Klout::Error; end
 
@@ -106,18 +107,25 @@ module Klout
     # Raises Klout::Error::Forbidden if Klout api key is not valid.
     # Raises Klout::Error::InternalServerError if there is a server error in Klout.
     # Raises Klout::Error::ServiceUnavailable if Klout endpoint is unavailable.
+    # Raises Klout::Error::GatewayTimeout if Klout endpoint respond with timeout.
+    # Raises Klout::Error for a non 200 response code.
     def parse_response(response)
       case response.code.to_i
+      when 200
+        body = ::MultiJson.decode(response.body)
+        raise Klout::Error.new(body['body']['error']) if body.has_key?('body') && body['body'].has_key?('error')
+        Hashie::Mash.new(body)
       when 403
         raise Klout::Error::Forbidden.new
       when 500
         raise Klout::Error::InternalServerError.new
       when 503
         raise Klout::Error::ServiceUnavailable.new
+      when 504
+        raise Klout::Error::GatewayTimeout.new
+      else
+        raise Klout::Error.new("#{response.code} - #{response.headers['X-Mashery-Error-Code']}")
       end
-      body = ::MultiJson.decode(response.body)
-      raise Klout::Error.new(body['body']['error']) if body.has_key?('body') && body['body'].has_key?('error')
-      Hashie::Mash.new(body)
     end
 
     # Internal: Builds the request url.

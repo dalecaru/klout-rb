@@ -49,6 +49,28 @@ describe Klout::Client do
         expect { Klout::Client.score("damiancaruso") }.to raise_error(Klout::Error::ServiceUnavailable)
       end
     end
+
+    context "gateway timeout" do
+      before do
+        stub_get("/1/klout.json").with(:query => @query.merge({:users => "damiancaruso"})).
+          to_return(:status => 504)
+      end
+
+      it "should raise an error if a gateway timeout is received" do
+        expect { Klout::Client.score("damiancaruso") }.to raise_error(Klout::Error::GatewayTimeout)
+      end
+    end
+
+    context "non sucessful response" do
+      before do
+        stub_get("/1/klout.json").with(:query => @query.merge({:users => "damiancaruso"})).
+          to_return(:status => 502)
+      end
+
+      it "should raise an error for non 200 response codes" do
+        expect { Klout::Client.score("damiancaruso") }.to raise_error(Klout::Error)
+      end
+    end
   end
 
   describe ".score" do
