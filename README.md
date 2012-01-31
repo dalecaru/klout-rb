@@ -1,6 +1,9 @@
-Klout [![Build Status](https://secure.travis-ci.org/cdamian/klout-rb.png)](http://travis-ci.org/cdamian/klout-rb)
+Klout [![Build Status](https://secure.travis-ci.org/cdamian/klout-rb.png)][travis] [![Dependency Status](https://gemnasium.com/cdamian/klout-rb.png?travis)][gemnasium]
 =====
 Ruby wrapper for the Klout REST API
+
+[travis]: http://travis-ci.org/cdamian/klout-rb
+[gemnasium]: https://gemnasium.com/cdamian/klout-rb
 
 Installation
 ------------
