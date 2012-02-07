@@ -24,7 +24,7 @@ Gem::Specification.new do |s|
   s.add_dependency "multi_json", "~> 1.0.3"
   
   s.add_development_dependency "rake", "~> 0.9.2.2"
-  s.add_development_dependency "rspec", "~> 2.7.0"
+  s.add_development_dependency "rspec", "~> 2.8.0"
   s.add_development_dependency "webmock", "~> 1.7.7"
 end
 
