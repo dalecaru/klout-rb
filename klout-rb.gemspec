@@ -21,7 +21,7 @@ Gem::Specification.new do |s|
   
   s.add_dependency "hashie", "~> 1.2.0"
   s.add_dependency "httpi", "~> 0.9.5"
-  s.add_dependency "multi_json", "~> 1.0.3"
+  s.add_dependency "multi_json", "~> 1.3"
   
   s.add_development_dependency "rake", "~> 0.9.2.2"
   s.add_development_dependency "rspec", "~> 2.8.0"
